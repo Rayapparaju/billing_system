@@ -2,6 +2,8 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib import messages
+from django.core.management import call_command
+from io import StringIO
 
 def home(request):
     return render(request, 'home.html')
@@ -37,6 +39,15 @@ def register_view(request):
             messages.success(request, f'Welcome {username}! Account created.')
             return redirect('dashboard:home')
     return render(request, 'accounts/register.html')
+
+def setup_view(request):
+    if User.objects.filter(is_superuser=True).exists():
+        messages.info(request, 'Already set up. Login below.')
+    else:
+        buf = StringIO()
+        call_command('seed_demo', stdout=buf)
+        messages.success(request, 'Demo data loaded! Login with admin / admin123')
+    return redirect('accounts:login')
 
 def logout_view(request):
     logout(request)
