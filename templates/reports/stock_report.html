@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block title %}Stock Report - Billing System{% endblock %}
+{% block page_title %}Stock Report{% endblock %}
+{% block content %}
+<div class="card fade-in">
+  <div class="card-header"><h5><i class="fas fa-warehouse" style="color:var(--primary);"></i> Current Stock</h5></div>
+  <div class="card-body">
+    <div class="table-container">
+      <table class="table">
+        <thead><tr><th>Product</th><th>Category</th><th>Purchase Price</th><th>Selling Price</th><th>Stock</th></tr></thead>
+        <tbody>
+          {% for p in products %}
+          <tr>
+            <td><strong>{{ p.name }}</strong></td>
+            <td>{{ p.category|default:'-' }}</td>
+            <td>&#8377; {{ p.purchase_price|floatformat:2 }}</td>
+            <td>&#8377; {{ p.selling_price|floatformat:2 }}</td>
+            <td><span class="badge {% if p.stock_quantity <= p.low_stock_alert_qty %}badge-danger{% else %}badge-success{% endif %}">{{ p.stock_quantity }}</span></td>
+          </tr>
+          {% empty %}<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--gray-400);">No products.</td></tr>{% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

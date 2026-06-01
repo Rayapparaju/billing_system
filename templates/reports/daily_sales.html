@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block title %}Daily Sales - Billing System{% endblock %}
+{% block page_title %}Daily Sales Report{% endblock %}
+
+{% block content %}
+<div class="card fade-in">
+  <div class="card-header">
+    <h5><i class="fas fa-calendar-day" style="color:var(--primary);"></i> Sales for {{ today|date:'d M Y' }}</h5>
+  </div>
+  <div class="card-body">
+    <div style="margin-bottom:16px;font-size:1.1rem;">
+      <strong>Total Sales: &#8377; {{ total|floatformat:2 }}</strong>
+    </div>
+    <div class="table-container">
+      <table class="table">
+        <thead><tr><th>Invoice</th><th>Customer</th><th>Amount</th><th>Status</th></tr></thead>
+        <tbody>
+          {% for inv in invoices %}
+          <tr>
+            <td><a href="{% url 'sales:detail' inv.pk %}" style="color:var(--primary);">{{ inv.invoice_no }}</a></td>
+            <td>{{ inv.customer.name }}</td>
+            <td>&#8377; {{ inv.grand_total|floatformat:2 }}</td>
+            <td><span class="badge {% if inv.payment_status == 'Paid' %}badge-success{% elif inv.payment_status == 'Partial' %}badge-warning{% else %}badge-danger{% endif %}">{{ inv.payment_status }}</span></td>
+          </tr>
+          {% empty %}<tr><td colspan="4" style="text-align:center;padding:40px;color:var(--gray-400);">No sales today.</td></tr>{% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

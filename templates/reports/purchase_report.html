@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block title %}Purchase Report - Billing System{% endblock %}
+{% block page_title %}Purchase Report{% endblock %}
+{% block content %}
+<div class="card fade-in">
+  <div class="card-header"><h5><i class="fas fa-shopping-cart" style="color:var(--primary);"></i> Purchases for {{ month }}</h5></div>
+  <div class="card-body">
+    <form method="get" style="margin-bottom:16px;display:flex;gap:10px;align-items:center;">
+      <input type="month" name="month" class="form-control" style="max-width:200px;" value="{{ month }}">
+      <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-search"></i> View</button>
+    </form>
+    <div style="margin-bottom:16px;font-size:1.1rem;"><strong>Total: &#8377; {{ total|floatformat:2 }}</strong></div>
+    <div class="table-container">
+      <table class="table">
+        <thead><tr><th>Date</th><th>Invoice</th><th>Supplier</th><th>Amount</th><th>Status</th></tr></thead>
+        <tbody>
+          {% for inv in invoices %}
+          <tr>
+            <td>{{ inv.date|date:'d-m-Y' }}</td>
+            <td>{{ inv.invoice_no }}</td>
+            <td>{{ inv.supplier.name }}</td>
+            <td>&#8377; {{ inv.grand_total|floatformat:2 }}</td>
+            <td><span class="badge {% if inv.payment_status == 'Paid' %}badge-success{% elif inv.payment_status == 'Partial' %}badge-warning{% else %}badge-danger{% endif %}">{{ inv.payment_status }}</span></td>
+          </tr>
+          {% empty %}<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--gray-400);">No purchases this month.</td></tr>{% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

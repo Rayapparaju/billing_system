@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block title %}Creditors - Billing System{% endblock %}
+{% block page_title %}Creditors Report{% endblock %}
+{% block content %}
+<div class="card fade-in">
+  <div class="card-header"><h5><i class="fas fa-user-check" style="color:var(--warning);"></i> Suppliers with Outstanding Dues</h5></div>
+  <div class="card-body">
+    <div class="table-container">
+      <table class="table">
+        <thead><tr><th>Supplier</th><th>Phone</th><th>Total Due</th><th>Actions</th></tr></thead>
+        <tbody>
+          {% for c in creditors %}
+          <tr>
+            <td><strong>{{ c.supplier.name }}</strong></td>
+            <td>{{ c.supplier.phone|default:'-' }}</td>
+            <td style="color:var(--warning);font-weight:600;">&#8377; {{ c.total_due|floatformat:2 }}</td>
+            <td><a href="{% url 'reports:supplier_ledger' %}?supplier={{ c.supplier.pk }}" class="btn btn-info btn-sm"><i class="fas fa-eye"></i> Ledger</a></td>
+          </tr>
+          {% empty %}<tr><td colspan="4" style="text-align:center;padding:40px;color:var(--gray-400);">No creditors! All suppliers have been paid.</td></tr>{% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

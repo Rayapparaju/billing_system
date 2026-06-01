@@ -1,0 +1,120 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Print Invoice - {{ invoice.invoice_no }}</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; font-size: 13px; color: #1e293b; padding: 20px; }
+    .no-print { margin-bottom: 20px; }
+    .btn { display:inline-flex;align-items:center;gap:6px;padding:10px 24px;border-radius:8px;font-size:14px;font-weight:600;border:none;cursor:pointer;text-decoration:none;background:#6366f1;color:#fff; }
+    .btn:hover { opacity:.9; }
+    .invoice-box { max-width: 800px; margin: 0 auto; background: #fff; padding: 40px; }
+    .invoice-header { display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:30px;padding-bottom:20px;border-bottom:2px solid #e2e8f0; }
+    .invoice-header .company h2 { font-size:24px;font-weight:700;color:#0f172a; }
+    .invoice-header .company p { color:#64748b;font-size:12px;margin-top:4px; }
+    .invoice-header .invoice-info { text-align:right; }
+    .invoice-header .invoice-info h3 { font-size:20px;color:#6366f1; }
+    .invoice-header .invoice-info p { color:#64748b;font-size:12px;margin-top:4px; }
+    .invoice-parties { display:flex;justify-content:space-between;margin-bottom:30px; }
+    .invoice-parties .bill-to h5 { font-size:12px;color:#64748b;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px; }
+    .invoice-parties .bill-to p { font-size:13px;line-height:1.6; }
+    table { width:100%;border-collapse:collapse;margin-bottom:20px; }
+    table th { padding:10px 12px;text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:#64748b;background:#f8fafc;border-bottom:2px solid #e2e8f0; }
+    table td { padding:10px 12px;border-bottom:1px solid #f1f5f9;font-size:13px; }
+    .totals { display:flex;justify-content:flex-end; }
+    .totals .total-box { min-width:280px; }
+    .totals .total-box > div { display:flex;justify-content:space-between;padding:4px 0;font-size:13px; }
+    .totals .total-box hr { border-color:#e2e8f0;margin:6px 0; }
+    .totals .total-box .grand { font-size:16px;font-weight:700;color:#6366f1; }
+    .invoice-footer { text-align:center;margin-top:40px;padding-top:20px;border-top:1px solid #e2e8f0;color:#94a3b8;font-size:11px; }
+    @media print {
+      .no-print { display:none; }
+      body { padding:0; }
+      .invoice-box { padding:20px; }
+    }
+    @media print and (max-width: 80mm) {
+      .invoice-box { max-width: 72mm; padding: 10px; font-size: 10px; }
+      table th, table td { padding: 4px 6px; font-size: 10px; }
+      .invoice-header .company h2 { font-size: 16px; }
+      .invoice-header .invoice-info h3 { font-size: 14px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="no-print">
+    <button class="btn" onclick="window.print()"><i class="fas fa-print"></i> Print Invoice</button>
+    <a href="{% url 'sales:detail' invoice.pk %}" class="btn" style="background:#e2e8f0;color:#475569;margin-left:8px;text-decoration:none;"><i class="fas fa-times"></i> Close</a>
+  </div>
+  <div class="invoice-box">
+    <div class="invoice-header">
+      <div class="company">
+        <h2>Goutham Enterprise</h2>
+        <p>Your Business Address, City, State - 000000</p>
+        <p>GST: 00AAAAA0000A0Z0 | Phone: +91 9876543210</p>
+      </div>
+      <div class="invoice-info">
+        <h3>TAX INVOICE</h3>
+        <p><strong>{{ invoice.invoice_no }}</strong></p>
+        <p>Date: {{ invoice.date|date:'d/m/Y' }}</p>
+      </div>
+    </div>
+    <div class="invoice-parties">
+      <div class="bill-to">
+        <h5>Bill To</h5>
+        <p><strong>{{ invoice.customer.name }}</strong><br>
+        {{ invoice.customer.address|default:'' }}<br>
+        Phone: {{ invoice.customer.phone|default:'-' }}<br>
+        Email: {{ invoice.customer.email|default:'-' }}</p>
+      </div>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Product</th>
+          <th>HSN</th>
+          <th style="text-align:center;">Qty</th>
+          <th style="text-align:right;">Rate</th>
+          <th style="text-align:right;">GST%</th>
+          <th style="text-align:right;">Disc</th>
+          <th style="text-align:right;">Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in items %}
+        <tr>
+          <td>{{ forloop.counter }}</td>
+          <td>{{ item.product.name }}</td>
+          <td>{{ item.product.hsn_code|default:'-' }}</td>
+          <td style="text-align:center;">{{ item.quantity }}</td>
+          <td style="text-align:right;">&#8377; {{ item.rate|floatformat:2 }}</td>
+          <td style="text-align:right;">{{ item.gst }}%</td>
+          <td style="text-align:right;">&#8377; {{ item.discount|floatformat:2 }}</td>
+          <td style="text-align:right;">&#8377; {{ item.total|floatformat:2 }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <div class="totals">
+      <div class="total-box">
+        <div><span>Subtotal:</span><span>&#8377; {{ invoice.subtotal|floatformat:2 }}</span></div>
+        <div><span>GST Amount:</span><span>&#8377; {{ invoice.gst_amount|floatformat:2 }}</span></div>
+        <div><span>Discount:</span><span>&#8377; {{ invoice.discount|floatformat:2 }}</span></div>
+        <hr>
+        <div class="grand"><span>Grand Total:</span><span>&#8377; {{ invoice.grand_total|floatformat:2 }}</span></div>
+        <div style="font-size:12px;color:#64748b;margin-top:4px;">
+          Amount in words: {{ invoice.grand_total }} Only
+        </div>
+      </div>
+    </div>
+    <div class="invoice-footer">
+      <p>This is a computer generated invoice | Thank you for your business!</p>
+    </div>
+  </div>
+</body>
+</html>

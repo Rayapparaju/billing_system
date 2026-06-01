@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% block title %}P&L - Billing System{% endblock %}
+{% block page_title %}Profit & Loss Statement{% endblock %}
+{% block content %}
+<div class="row" style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-bottom:30px;">
+  <div class="stat-card bg-success fade-in">
+    <div class="stat-icon"><i class="fas fa-rupee-sign"></i></div>
+    <h6>Total Sales</h6>
+    <h3>&#8377; {{ total_sales|floatformat:2 }}</h3>
+  </div>
+  <div class="stat-card bg-danger fade-in">
+    <div class="stat-icon"><i class="fas fa-shopping-cart"></i></div>
+    <h6>Total Purchases</h6>
+    <h3>&#8377; {{ total_purchases|floatformat:2 }}</h3>
+  </div>
+  <div class="stat-card {% if profit >= 0 %}bg-primary{% else %}bg-warning{% endif %} fade-in">
+    <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
+    <h6>Profit / Loss</h6>
+    <h3>&#8377; {{ profit|floatformat:2 }}</h3>
+  </div>
+</div>
+<div class="card fade-in">
+  <div class="card-body">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:30px;">
+      <div>
+        <h5 style="color:var(--success);margin-bottom:16px;"><i class="fas fa-plus-circle"></i> Income</h5>
+        <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--gray-100);">
+          <span>Total Sales</span><span style="font-weight:600;">&#8377; {{ total_sales|floatformat:2 }}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:10px 0;font-weight:700;font-size:1.1rem;">
+          <span>Total Income</span><span style="color:var(--success);">&#8377; {{ total_sales|floatformat:2 }}</span>
+        </div>
+      </div>
+      <div>
+        <h5 style="color:var(--danger);margin-bottom:16px;"><i class="fas fa-minus-circle"></i> Expenses</h5>
+        <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--gray-100);">
+          <span>Total Purchases</span><span style="font-weight:600;">&#8377; {{ total_purchases|floatformat:2 }}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:10px 0;font-weight:700;font-size:1.1rem;">
+          <span>Total Expenses</span><span style="color:var(--danger);">&#8377; {{ total_purchases|floatformat:2 }}</span>
+        </div>
+      </div>
+    </div>
+    <hr style="margin:20px 0;">
+    <div style="display:flex;justify-content:space-between;font-size:1.3rem;font-weight:700;padding:10px 0;">
+      <span>Net {% if profit >= 0 %}Profit{% else %}Loss{% endif %}</span>
+      <span style="color:{% if profit >= 0 %}var(--success){% else %}var(--danger){% endif %};">&#8377; {{ profit|floatformat:2 }}</span>
+    </div>
+  </div>
+</div>
+{% endblock %}

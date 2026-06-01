@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Dashboard - Billing System{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="row" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:20px;margin-bottom:30px;">
+  <div class="stat-card bg-primary fade-in">
+    <div class="stat-icon"><i class="fas fa-rupee-sign"></i></div>
+    <h6>Total Sales</h6>
+    <h3>&#8377; {{ total_sales|floatformat:2 }}</h3>
+  </div>
+  <div class="stat-card bg-success fade-in">
+    <div class="stat-icon"><i class="fas fa-shopping-cart"></i></div>
+    <h6>Total Purchases</h6>
+    <h3>&#8377; {{ total_purchases|floatformat:2 }}</h3>
+  </div>
+  <div class="stat-card bg-info fade-in">
+    <div class="stat-icon"><i class="fas fa-users"></i></div>
+    <h6>Customers</h6>
+    <h3>{{ total_customers }}</h3>
+  </div>
+  <div class="stat-card bg-warning fade-in">
+    <div class="stat-icon"><i class="fas fa-truck"></i></div>
+    <h6>Suppliers</h6>
+    <h3>{{ total_suppliers }}</h3>
+  </div>
+  <div class="stat-card bg-dark fade-in">
+    <div class="stat-icon"><i class="fas fa-box"></i></div>
+    <h6>Products</h6>
+    <h3>{{ total_products }}</h3>
+  </div>
+  <div class="stat-card bg-danger fade-in">
+    <div class="stat-icon"><i class="fas fa-exclamation-triangle"></i></div>
+    <h6>Low Stock</h6>
+    <h3>{{ low_stock_products }}</h3>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:2fr 1fr;gap:24px;margin-bottom:30px;">
+  <div class="card fade-in">
+    <div class="card-header">
+      <h5><i class="fas fa-chart-bar" style="color:var(--primary);"></i> Sales Overview</h5>
+    </div>
+    <div class="card-body">
+      <div class="chart-container">
+        <canvas id="salesChart"></canvas>
+      </div>
+    </div>
+  </div>
+  <div class="card fade-in">
+    <div class="card-header">
+      <h5><i class="fas fa-clock" style="color:var(--primary);"></i> Recent Invoices</h5>
+    </div>
+    <div class="card-body" style="padding:0;">
+      <div class="table-container">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Invoice</th>
+              <th>Customer</th>
+              <th>Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for inv in recent_invoices %}
+            <tr>
+              <td><a href="{% url 'sales:detail' inv.id %}" style="color:var(--primary);text-decoration:none;font-weight:500;">{{ inv.invoice_no }}</a></td>
+              <td>{{ inv.customer.name }}</td>
+              <td>&#8377; {{ inv.grand_total|floatformat:2 }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="3" style="text-align:center;color:var(--gray-400);padding:30px;">No invoices yet</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card-footer">
+      <a href="{% url 'sales:create' %}" class="btn btn-primary btn-sm"><i class="fas fa-plus"></i> New Invoice</a>
+      <a href="{% url 'sales:list' %}" class="btn btn-outline btn-sm">View All</a>
+    </div>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+  <div class="card fade-in">
+    <div class="card-header">
+      <h5><i class="fas fa-bolt" style="color:var(--warning);"></i> Quick Actions</h5>
+    </div>
+    <div class="card-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <a href="{% url 'sales:create' %}" class="btn btn-primary"><i class="fas fa-file-invoice"></i> New Sale</a>
+        <a href="{% url 'purchases:create' %}" class="btn btn-success"><i class="fas fa-cart-plus"></i> New Purchase</a>
+        <a href="{% url 'customers:add' %}" class="btn btn-info"><i class="fas fa-user-plus"></i> Add Customer</a>
+        <a href="{% url 'products:add' %}" class="btn btn-warning"><i class="fas fa-box"></i> Add Product</a>
+      </div>
+    </div>
+  </div>
+  <div class="card fade-in">
+    <div class="card-header">
+      <h5><i class="fas fa-file-alt" style="color:var(--success);"></i> Quick Reports</h5>
+    </div>
+    <div class="card-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <a href="{% url 'reports:daily_sales' %}" class="btn btn-outline btn-sm"><i class="fas fa-calendar-day"></i> Daily Sales</a>
+        <a href="{% url 'reports:monthly_sales' %}" class="btn btn-outline btn-sm"><i class="fas fa-calendar-alt"></i> Monthly Sales</a>
+        <a href="{% url 'reports:stock_report' %}" class="btn btn-outline btn-sm"><i class="fas fa-warehouse"></i> Stock</a>
+        <a href="{% url 'reports:profit_loss' %}" class="btn btn-outline btn-sm"><i class="fas fa-chart-line"></i> P&L</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  const ctx = document.getElementById('salesChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: {{ sales_labels|safe }},
+      datasets: [{
+        label: 'Sales',
+        data: {{ sales_data|safe }},
+        borderColor: '#6366f1',
+        backgroundColor: 'rgba(99,102,241,.1)',
+        borderWidth: 3,
+        fill: true,
+        tension: 0.4,
+        pointBackgroundColor: '#6366f1',
+        pointBorderColor: '#fff',
+        pointBorderWidth: 2,
+        pointRadius: 5,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { display: false }, ticks: { color: '#94a3b8' } },
+        y: { grid: { color: 'rgba(0,0,0,.05)' }, ticks: { color: '#94a3b8', callback: function(v) { return '₹' + v; } } }
+      }
+    }
+  });
+</script>
+{% endblock %}

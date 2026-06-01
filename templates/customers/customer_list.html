@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% block title %}Customers - Billing System{% endblock %}
+{% block page_title %}Customers{% endblock %}
+
+{% block content %}
+<div class="card fade-in">
+  <div class="card-header">
+    <h5><i class="fas fa-users" style="color:var(--primary);"></i> All Customers</h5>
+    <div>
+      <a href="{% url 'customers:add' %}" class="btn btn-primary btn-sm"><i class="fas fa-plus"></i> Add Customer</a>
+    </div>
+  </div>
+  <div class="card-body">
+    <form method="get" style="margin-bottom:16px;">
+      <div class="search-box">
+        <input type="text" name="search" placeholder="Search customers..." value="{{ search }}">
+        <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-search"></i></button>
+        {% if search %}
+        <a href="{% url 'customers:list' %}" class="btn btn-outline btn-sm">Clear</a>
+        {% endif %}
+      </div>
+    </form>
+    <div class="table-container">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Phone</th>
+            <th>Email</th>
+            <th>Opening Balance</th>
+            <th>Created</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for c in customers %}
+          <tr>
+            <td><strong>{{ c.name }}</strong></td>
+            <td>{{ c.phone|default:'-' }}</td>
+            <td>{{ c.email|default:'-' }}</td>
+            <td>&#8377; {{ c.opening_balance|floatformat:2 }}</td>
+            <td>{{ c.created_date|date:'d-m-Y' }}</td>
+            <td>
+              <div class="actions">
+                <a href="{% url 'customers:edit' c.pk %}" class="btn btn-info btn-sm"><i class="fas fa-edit"></i></a>
+                <button class="btn btn-danger btn-sm" data-delete-url="{% url 'customers:delete' c.pk %}" data-item="{{ c.name }}"><i class="fas fa-trash"></i></button>
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="6" style="text-align:center;padding:40px;color:var(--gray-400);">No customers found.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

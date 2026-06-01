@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% block title %}Create Purchase - Billing System{% endblock %}
+{% block page_title %}Create Purchase Invoice{% endblock %}
+{% block content %}
+<form method="post" class="invoice-form">
+  {% csrf_token %}
+  <input type="hidden" name="items" id="id_items">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px;">
+    <div class="card fade-in">
+      <div class="card-header"><h5><i class="fas fa-truck" style="color:var(--primary);"></i> Supplier Details</h5></div>
+      <div class="card-body">
+        <div class="form-group">
+          <label>Select Supplier</label>
+          <select name="supplier" class="form-control" required>
+            <option value="">-- Choose Supplier --</option>
+            {% for s in suppliers %}
+            <option value="{{ s.pk }}">{{ s.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="card fade-in">
+      <div class="card-header"><h5><i class="fas fa-credit-card" style="color:var(--primary);"></i> Payment Status</h5></div>
+      <div class="card-body">
+        <div class="form-group">
+          <label>Payment Status</label>
+          <select name="payment_status" class="form-control">
+            <option value="Unpaid">Unpaid</option>
+            <option value="Paid">Paid</option>
+            <option value="Partial">Partial</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card fade-in" style="margin-bottom:24px;">
+    <div class="card-header">
+      <h5><i class="fas fa-list" style="color:var(--primary);"></i> Purchase Items</h5>
+      <button type="button" class="btn btn-primary btn-sm" id="addItemBtn"><i class="fas fa-plus"></i> Add Item</button>
+    </div>
+    <div class="card-body">
+      <div class="invoice-items-table">
+        <div class="item-row header-row">
+          <span>Product</span><span>Qty</span><span>Rate</span><span>GST%</span><span>Disc%</span><span>Total</span><span></span>
+        </div>
+        <div id="itemsContainer"></div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;margin-top:16px;">
+        <div style="min-width:300px;">
+          <div style="display:flex;justify-content:space-between;padding:4px 0;font-size:0.9rem;">
+            <span style="color:var(--gray-500);">Subtotal:</span><span id="calcSubtotal">0.00</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:4px 0;font-size:0.9rem;">
+            <span style="color:var(--gray-500);">GST:</span><span id="calcGst">0.00</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:4px 0;font-size:0.9rem;">
+            <span style="color:var(--gray-500);">Discount:</span><span id="calcDiscount">0.00</span>
+          </div>
+          <hr style="border-color:var(--gray-200);margin:6px 0;">
+          <div style="display:flex;justify-content:space-between;padding:4px 0;font-size:1.1rem;font-weight:700;">
+            <span>Grand Total:</span><span id="calcGrandTotal" style="color:var(--primary);">0.00</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-footer" style="display:flex;gap:10px;justify-content:flex-end;">
+      <a href="{% url 'purchases:list' %}" class="btn btn-secondary">Cancel</a>
+      <button type="submit" class="btn btn-success"><i class="fas fa-save"></i> Save Purchase</button>
+    </div>
+  </div>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  var productList = [
+    {% for p in products %}
+    { id: "{{ p.pk }}", name: "{{ p.name|escapejs }}", price: "{{ p.purchase_price }}", gst: "{{ p.gst_percentage }}" },
+    {% endfor %}
+  ];
+</script>
+{% endblock %}

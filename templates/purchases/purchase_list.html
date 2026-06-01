@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block title %}Purchase Invoices - Billing System{% endblock %}
+{% block page_title %}Purchase Invoices{% endblock %}
+{% block content %}
+<div class="card fade-in">
+  <div class="card-header">
+    <h5><i class="fas fa-cart-plus" style="color:var(--primary);"></i> All Purchases</h5>
+    <a href="{% url 'purchases:create' %}" class="btn btn-primary btn-sm"><i class="fas fa-plus"></i> New Purchase</a>
+  </div>
+  <div class="card-body">
+    <div class="table-container">
+      <table class="table">
+        <thead>
+          <tr><th>Invoice #</th><th>Supplier</th><th>Date</th><th>Amount</th><th>Status</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+          {% for inv in invoices %}
+          <tr>
+            <td><strong>{{ inv.invoice_no }}</strong></td>
+            <td>{{ inv.supplier.name }}</td>
+            <td>{{ inv.date|date:'d-m-Y' }}</td>
+            <td>&#8377; {{ inv.grand_total|floatformat:2 }}</td>
+            <td><span class="badge {% if inv.payment_status == 'Paid' %}badge-success{% elif inv.payment_status == 'Partial' %}badge-warning{% else %}badge-danger{% endif %}">{{ inv.payment_status }}</span></td>
+            <td>
+              <div class="actions">
+                <a href="{% url 'purchases:detail' inv.pk %}" class="btn btn-info btn-sm"><i class="fas fa-eye"></i></a>
+                <button class="btn btn-danger btn-sm" data-delete-url="{% url 'purchases:delete' inv.pk %}" data-item="{{ inv.invoice_no }}"><i class="fas fa-trash"></i></button>
+              </div>
+            </td>
+          </tr>
+          {% empty %}<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--gray-400);">No purchases found.</td></tr>{% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

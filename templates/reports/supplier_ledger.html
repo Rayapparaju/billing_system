@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block title %}Supplier Ledger - Billing System{% endblock %}
+{% block page_title %}Supplier Ledger{% endblock %}
+{% block content %}
+<div class="card fade-in">
+  <div class="card-header"><h5><i class="fas fa-address-card" style="color:var(--primary);"></i> Supplier Ledger</h5></div>
+  <div class="card-body">
+    <form method="get" style="margin-bottom:16px;display:flex;gap:10px;align-items:center;">
+      <select name="supplier" class="form-control" style="max-width:300px;">
+        <option value="">-- Select Supplier --</option>
+        {% for s in suppliers %}
+        <option value="{{ s.pk }}" {% if supplier and supplier.pk == s.pk %}selected{% endif %}>{{ s.name }}</option>
+        {% endfor %}
+      </select>
+      <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-search"></i> View</button>
+    </form>
+    {% if supplier %}
+    <h5 style="margin-bottom:16px;">{{ supplier.name }} - Balance: &#8377; {{ supplier.opening_balance|floatformat:2 }}</h5>
+    <div class="table-container">
+      <table class="table">
+        <thead><tr><th>Date</th><th>Invoice</th><th>Amount</th><th>Status</th></tr></thead>
+        <tbody>
+          {% for p in purchases %}
+          <tr>
+            <td>{{ p.date|date:'d-m-Y' }}</td>
+            <td>{{ p.invoice_no }}</td>
+            <td>&#8377; {{ p.grand_total|floatformat:2 }}</td>
+            <td><span class="badge {% if p.payment_status == 'Paid' %}badge-success{% elif p.payment_status == 'Partial' %}badge-warning{% else %}badge-danger{% endif %}">{{ p.payment_status }}</span></td>
+          </tr>
+          {% empty %}<tr><td colspan="4" style="text-align:center;padding:30px;color:var(--gray-400);">No transactions.</td></tr>{% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block title %}Low Stock - Billing System{% endblock %}
+{% block page_title %}Low Stock Report{% endblock %}
+{% block content %}
+<div class="card fade-in">
+  <div class="card-header"><h5><i class="fas fa-exclamation-triangle" style="color:var(--danger);"></i> Low Stock Products</h5></div>
+  <div class="card-body">
+    <div class="table-container">
+      <table class="table">
+        <thead><tr><th>Product</th><th>Category</th><th>Stock</th><th>Alert Qty</th><th>Status</th></tr></thead>
+        <tbody>
+          {% for p in products %}
+          <tr>
+            <td><strong>{{ p.name }}</strong></td>
+            <td>{{ p.category|default:'-' }}</td>
+            <td>{{ p.stock_quantity }}</td>
+            <td>{{ p.low_stock_alert_qty }}</td>
+            <td><span class="badge badge-danger">Low Stock</span></td>
+          </tr>
+          {% empty %}<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--gray-400);">All products have sufficient stock.</td></tr>{% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
