@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}Sales Returns - Billing System{% endblock %}
+{% block page_title %}Sales Returns{% endblock %}
+{% block content %}
+<div class="card fade-in">
+  <div class="card-header">
+    <h5><i class="fas fa-undo" style="color:var(--primary);"></i> All Sales Returns</h5>
+    <a href="{% url 'sales:return_create' %}" class="btn btn-primary btn-sm"><i class="fas fa-plus"></i> New Return</a>
+  </div>
+  <div class="card-body">
+    <div class="table-container">
+      <table class="table">
+        <thead><tr><th>Return #</th><th>Invoice</th><th>Customer</th><th>Date</th><th>Amount</th><th>Actions</th></tr></thead>
+        <tbody>
+          {% for r in returns %}
+          <tr>
+            <td><strong>{{ r.return_no }}</strong></td>
+            <td>{{ r.sale_invoice.invoice_no }}</td>
+            <td>{{ r.customer.name }}</td>
+            <td>{{ r.date|date:'d-m-Y' }}</td>
+            <td>&#8377; {{ r.grand_total|floatformat:2 }}</td>
+            <td><a href="{% url 'sales:return_detail' r.pk %}" class="btn btn-info btn-sm"><i class="fas fa-eye"></i></a></td>
+          </tr>
+          {% empty %}<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--gray-400);">No sales returns.</td></tr>{% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

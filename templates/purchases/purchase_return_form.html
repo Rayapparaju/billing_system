@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% block title %}Create Purchase Return - Billing System{% endblock %}
+{% block page_title %}Create Purchase Return{% endblock %}
+{% block content %}
+<form method="post" class="invoice-form">
+  {% csrf_token %}
+  <input type="hidden" name="items" id="id_items">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px;">
+    <div class="card fade-in">
+      <div class="card-header"><h5><i class="fas fa-file-invoice" style="color:var(--primary);"></i> Original Purchase</h5></div>
+      <div class="card-body">
+        <div class="form-group">
+          <label>Select Purchase Invoice</label>
+          <select name="invoice" class="form-control" required>
+            <option value="">-- Choose Invoice --</option>
+            {% for inv in invoices %}
+            <option value="{{ inv.pk }}">{{ inv.invoice_no }} - {{ inv.supplier.name }} (&#8377; {{ inv.grand_total|floatformat:2 }})</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Reason for Return</label>
+          <textarea name="reason" class="form-control" rows="3" placeholder="Enter reason..."></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="card fade-in">
+      <div class="card-header"><h5><i class="fas fa-info-circle" style="color:var(--primary);"></i> Instructions</h5></div>
+      <div class="card-body">
+        <p style="font-size:0.9rem;color:var(--gray-500);">Select the original purchase and add the returned items. Stock will be automatically reduced.</p>
+      </div>
+    </div>
+  </div>
+  <div class="card fade-in" style="margin-bottom:24px;">
+    <div class="card-header">
+      <h5><i class="fas fa-box" style="color:var(--primary);"></i> Return Items</h5>
+      <button type="button" class="btn btn-primary btn-sm" id="addItemBtn"><i class="fas fa-plus"></i> Add Item</button>
+    </div>
+    <div class="card-body">
+      <div class="invoice-items-table">
+        <div class="item-row header-row">
+          <span>Product</span><span>Qty</span><span>Rate</span><span>GST%</span><span>Disc%</span><span>Total</span><span></span>
+        </div>
+        <div id="itemsContainer"></div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;margin-top:16px;">
+        <div style="min-width:300px;">
+          <div style="display:flex;justify-content:space-between;padding:4px 0;"><span style="color:var(--gray-500);">Subtotal:</span><span id="calcSubtotal">0.00</span></div>
+          <div style="display:flex;justify-content:space-between;padding:4px 0;"><span style="color:var(--gray-500);">GST:</span><span id="calcGst">0.00</span></div>
+          <div style="display:flex;justify-content:space-between;padding:4px 0;"><span style="color:var(--gray-500);">Discount:</span><span id="calcDiscount">0.00</span></div>
+          <hr style="border-color:var(--gray-200);margin:6px 0;">
+          <div style="display:flex;justify-content:space-between;padding:4px 0;font-size:1.1rem;font-weight:700;">
+            <span>Grand Total:</span><span id="calcGrandTotal" style="color:var(--primary);">0.00</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-footer" style="display:flex;gap:10px;justify-content:flex-end;">
+      <a href="{% url 'purchases:return_list' %}" class="btn btn-secondary">Cancel</a>
+      <button type="submit" class="btn btn-success"><i class="fas fa-save"></i> Save Return</button>
+    </div>
+  </div>
+</form>
+{% endblock %}
+{% block extra_js %}
+<script>
+  var productList = [
+    {% for p in products %}
+    { id: "{{ p.pk }}", name: "{{ p.name|escapejs }}", price: "{{ p.purchase_price }}", gst: "{{ p.gst_percentage }}" },
+    {% endfor %}
+  ];
+</script>
+{% endblock %}

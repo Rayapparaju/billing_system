@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from .models import SaleInvoice, SaleItem
+from .models import SaleInvoice, SaleItem, SalesReturn, SalesReturnItem
 from customers.models import Customer
 from products.models import Product
 
@@ -113,3 +113,74 @@ def sale_delete(request, pk):
         messages.success(request, 'Invoice deleted successfully.')
         return redirect('sales:list')
     return render(request, 'sales/sale_confirm_delete.html', {'invoice': invoice})
+
+@login_required
+def sales_return_list(request):
+    returns = SalesReturn.objects.select_related('customer', 'sale_invoice').all().order_by('-created_date')
+    return render(request, 'sales/sales_return_list.html', {'returns': returns})
+
+@login_required
+def sales_return_create(request):
+    invoices = SaleInvoice.objects.select_related('customer').all().order_by('-created_date')
+    products = Product.objects.all()
+    if request.method == 'POST':
+        invoice_id = request.POST.get('invoice')
+        reason = request.POST.get('reason', '')
+        items_data = json.loads(request.POST.get('items', '[]'))
+        if not invoice_id or not items_data:
+            messages.error(request, 'Please select an invoice and add items.')
+            return redirect('sales:return_create')
+        sale_invoice = get_object_or_404(SaleInvoice, pk=invoice_id)
+        customer = sale_invoice.customer
+        last_return = SalesReturn.objects.order_by('-id').first()
+        last_num = 0
+        if last_return and last_return.return_no.startswith('SRET-'):
+            try:
+                last_num = int(last_return.return_no.replace('SRET-', ''))
+            except:
+                pass
+        return_no = f'SRET-{str(last_num + 1).zfill(5)}'
+        subtotal = total_gst = total_discount = 0.0
+        for item in items_data:
+            product = get_object_or_404(Product, pk=item['product_id'])
+            qty = int(item['quantity'])
+            rate = float(item['rate'])
+            gst_pct = float(item.get('gst', 0))
+            disc = float(item.get('discount', 0))
+            item_total = qty * rate
+            gst_amt = item_total * (gst_pct / 100)
+            discount_amt = item_total * (disc / 100) if disc > 0 else disc
+            subtotal += item_total
+            total_gst += gst_amt
+            total_discount += discount_amt
+        grand_total = subtotal + total_gst - total_discount
+        return_inv = SalesReturn.objects.create(
+            return_no=return_no, sale_invoice=sale_invoice, customer=customer,
+            subtotal=subtotal, discount=total_discount, gst_amount=total_gst,
+            grand_total=grand_total, reason=reason,
+        )
+        for item in items_data:
+            product = get_object_or_404(Product, pk=item['product_id'])
+            qty = int(item['quantity'])
+            rate = float(item['rate'])
+            gst_pct = float(item.get('gst', 0))
+            disc = float(item.get('discount', 0))
+            item_total = qty * rate
+            gst_amt = item_total * (gst_pct / 100)
+            discount_amt = item_total * (disc / 100) if disc > 0 else disc
+            line_total = item_total + gst_amt - discount_amt
+            SalesReturnItem.objects.create(
+                return_invoice=return_inv, product=product, quantity=qty,
+                rate=rate, gst=gst_pct, discount=discount_amt, total=line_total,
+            )
+            product.stock_quantity += qty
+            product.save()
+        messages.success(request, f'Sales return {return_no} created successfully.')
+        return redirect('sales:return_list')
+    return render(request, 'sales/sales_return_form.html', {'invoices': invoices, 'products': products})
+
+@login_required
+def sales_return_detail(request, pk):
+    return_inv = get_object_or_404(SalesReturn.objects.select_related('customer', 'sale_invoice'), pk=pk)
+    items = SalesReturnItem.objects.filter(return_invoice=return_inv).select_related('product')
+    return render(request, 'sales/sales_return_detail.html', {'return_inv': return_inv, 'items': items})
