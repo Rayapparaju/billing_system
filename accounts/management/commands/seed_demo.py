@@ -1,6 +1,7 @@
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 from datetime import date, timedelta
+from django.contrib.auth.models import User
 from customers.models import Customer
 from suppliers.models import Supplier
 from products.models import Product, Category
@@ -14,6 +15,10 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         self.stdout.write('Seeding demo data...')
+
+        if not User.objects.filter(username='admin').exists():
+            User.objects.create_superuser('admin', 'admin@example.com', 'admin123')
+            self.stdout.write('Created superuser (admin / admin123)')
 
         # Categories
         cat_names = ['Electronics', 'Groceries', 'Clothing', 'Stationery', 'Furniture', 'Hardware', 'Pharmaceuticals']
