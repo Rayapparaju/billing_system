@@ -41,6 +41,9 @@
         <a href="{% url 'purchases:list' %}" class="{% if 'purchases' in request.resolver_match.view_name %}active{% endif %}">
           <i class="fas fa-cart-plus"></i> Purchase Invoices
         </a>
+        <a href="{% url 'sales:receipt_list' %}" class="{% if 'receipt' in request.resolver_match.view_name %}active{% endif %}">
+          <i class="fas fa-hand-holding-usd"></i> Receipts
+        </a>
         <a href="{% url 'sales:return_list' %}" class="{% if 'return' in request.resolver_match.view_name and 'sales' in request.resolver_match.view_name %}active{% endif %}">
           <i class="fas fa-undo"></i> Sales Returns
         </a>

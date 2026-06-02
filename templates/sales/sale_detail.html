@@ -7,6 +7,7 @@
   <div class="card-header">
     <h5><i class="fas fa-file-invoice" style="color:var(--primary);"></i> Invoice Details</h5>
     <div class="actions">
+      <a href="{% url 'sales:receipt_create' %}?invoice={{ invoice.pk }}" class="btn btn-success btn-sm"><i class="fas fa-hand-holding-usd"></i> Record Payment</a>
       <a href="{% url 'sales:print' invoice.pk %}" class="btn btn-primary btn-sm"><i class="fas fa-print"></i> Print</a>
       <a href="{% url 'sales:list' %}" class="btn btn-outline btn-sm">Back</a>
     </div>
@@ -53,6 +54,14 @@
         <hr style="border-color:var(--gray-200);">
         <div style="display:flex;justify-content:space-between;padding:4px 0;font-size:1.2rem;font-weight:700;"><span>Grand Total:</span><span style="color:var(--primary);">&#8377; {{ invoice.grand_total|floatformat:2 }}</span></div>
         <div style="display:flex;justify-content:space-between;padding:4px 0;margin-top:8px;">
+          <span style="color:var(--gray-500);">Paid:</span>
+          <span style="color:var(--success);font-weight:600;">&#8377; {{ total_paid|floatformat:2 }}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:4px 0;">
+          <span style="color:var(--gray-500);">Balance:</span>
+          <span style="color:{% if balance <= 0 %}var(--success){% else %}var(--danger){% endif %};font-weight:600;">&#8377; {{ balance|floatformat:2 }}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:4px 0;">
           <span style="color:var(--gray-500);">Status:</span>
           <span class="badge {% if invoice.payment_status == 'Paid' %}badge-success{% elif invoice.payment_status == 'Partial' %}badge-warning{% else %}badge-danger{% endif %}">{{ invoice.payment_status }}</span>
         </div>
@@ -60,4 +69,30 @@
     </div>
   </div>
 </div>
+
+{% if receipts %}
+<div class="card fade-in" style="margin-top:20px;">
+  <div class="card-header">
+    <h5><i class="fas fa-receipt" style="color:var(--primary);"></i> Payment History</h5>
+  </div>
+  <div class="card-body">
+    <div class="table-container">
+      <table class="table">
+        <thead><tr><th>Receipt #</th><th>Date</th><th>Amount</th><th>Method</th><th>Reference</th></tr></thead>
+        <tbody>
+          {% for r in receipts %}
+          <tr>
+            <td>{{ r.receipt_no }}</td>
+            <td>{{ r.date|date:'d-m-Y' }}</td>
+            <td>&#8377; {{ r.amount|floatformat:2 }}</td>
+            <td><span class="badge badge-info">{{ r.payment_method }}</span></td>
+            <td>{{ r.reference_no|default:'-' }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endif %}
 {% endblock %}

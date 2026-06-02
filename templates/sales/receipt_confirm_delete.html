@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block title %}Delete Receipt{% endblock %}
+{% block page_title %}Delete Receipt{% endblock %}
+
+{% block content %}
+<div class="card fade-in" style="max-width:500px;">
+  <div class="card-header">
+    <h5><i class="fas fa-trash-alt" style="color:var(--danger);"></i> Confirm Delete</h5>
+  </div>
+  <div class="card-body" style="text-align:center;">
+    <p style="margin-bottom:20px;">Delete receipt <strong>{{ receipt.receipt_no }}</strong> of &#8377;{{ receipt.amount|floatformat:2 }} from <strong>{{ receipt.customer.name }}</strong>?</p>
+    <form method="post" style="display:inline-flex;gap:10px;">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger"><i class="fas fa-trash"></i> Delete</button>
+      <a href="{% url 'sales:receipt_list' %}" class="btn btn-secondary">Cancel</a>
+    </form>
+  </div>
+</div>
+{% endblock %}

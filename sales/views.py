@@ -4,9 +4,20 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from .models import SaleInvoice, SaleItem, SalesReturn, SalesReturnItem
+from django.db.models import Sum
+from .models import SaleInvoice, SaleItem, Receipt, SalesReturn, SalesReturnItem
 from customers.models import Customer
 from products.models import Product
+
+def update_invoice_payment_status(invoice):
+    total_paid = Receipt.objects.filter(invoice=invoice).aggregate(Sum('amount'))['amount__sum'] or 0
+    if total_paid >= invoice.grand_total:
+        invoice.payment_status = 'Paid'
+    elif total_paid > 0:
+        invoice.payment_status = 'Partial'
+    else:
+        invoice.payment_status = 'Unpaid'
+    invoice.save(update_fields=['payment_status'])
 
 @login_required
 def sale_list(request):
@@ -92,7 +103,13 @@ def sale_create(request):
 def sale_detail(request, pk):
     invoice = get_object_or_404(SaleInvoice.objects.select_related('customer'), pk=pk)
     items = SaleItem.objects.filter(invoice=invoice).select_related('product')
-    return render(request, 'sales/sale_detail.html', {'invoice': invoice, 'items': items})
+    receipts = Receipt.objects.filter(invoice=invoice).order_by('-created_date')
+    total_paid = sum(r.amount for r in receipts)
+    balance = invoice.grand_total - total_paid
+    return render(request, 'sales/sale_detail.html', {
+        'invoice': invoice, 'items': items,
+        'receipts': receipts, 'total_paid': total_paid, 'balance': balance,
+    })
 
 @login_required
 def sale_print(request, pk):
@@ -116,6 +133,69 @@ def sale_delete(request, pk):
         messages.success(request, 'Invoice deleted successfully.')
         return redirect('sales:list')
     return render(request, 'sales/sale_confirm_delete.html', {'invoice': invoice})
+
+@login_required
+def receipt_list(request):
+    receipts = Receipt.objects.select_related('customer', 'invoice').all().order_by('-created_date')
+    return render(request, 'sales/receipt_list.html', {'receipts': receipts})
+
+@login_required
+def receipt_create(request):
+    customers = Customer.objects.all()
+    if request.method == 'POST':
+        customer_id = request.POST.get('customer')
+        invoice_id = request.POST.get('invoice')
+        amount = request.POST.get('amount')
+        payment_method = request.POST.get('payment_method', 'Cash')
+        reference_no = request.POST.get('reference_no', '')
+        notes = request.POST.get('notes', '')
+        if not customer_id or not amount:
+            messages.error(request, 'Customer and amount are required.')
+            return redirect('sales:receipt_create')
+        try:
+            amount = float(amount)
+        except:
+            messages.error(request, 'Invalid amount.')
+            return redirect('sales:receipt_create')
+        customer = get_object_or_404(Customer, pk=customer_id)
+        invoice = None
+        if invoice_id:
+            invoice = get_object_or_404(SaleInvoice, pk=invoice_id)
+        last_rcpt = Receipt.objects.order_by('-id').first()
+        last_num = 0
+        if last_rcpt and last_rcpt.receipt_no.startswith('RCPT-'):
+            try:
+                last_num = int(last_rcpt.receipt_no.replace('RCPT-', ''))
+            except:
+                pass
+        receipt_no = f'RCPT-{str(last_num + 1).zfill(5)}'
+        receipt = Receipt.objects.create(
+            receipt_no=receipt_no, customer=customer, invoice=invoice,
+            amount=amount, payment_method=payment_method,
+            reference_no=reference_no, notes=notes,
+        )
+        if invoice:
+            update_invoice_payment_status(invoice)
+        messages.success(request, f'Receipt {receipt_no} recorded successfully.')
+        return redirect('sales:receipt_list')
+    invoices = SaleInvoice.objects.select_related('customer').all().order_by('-created_date')
+    preselected_invoice = request.GET.get('invoice')
+    return render(request, 'sales/receipt_form.html', {
+        'customers': customers, 'invoices': invoices,
+        'preselected_invoice': preselected_invoice,
+    })
+
+@login_required
+def receipt_delete(request, pk):
+    receipt = get_object_or_404(Receipt, pk=pk)
+    if request.method == 'POST':
+        invoice = receipt.invoice
+        receipt.delete()
+        if invoice:
+            update_invoice_payment_status(invoice)
+        messages.success(request, 'Receipt deleted.')
+        return redirect('sales:receipt_list')
+    return render(request, 'sales/receipt_confirm_delete.html', {'receipt': receipt})
 
 @login_required
 def sales_return_list(request):

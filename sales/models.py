@@ -36,6 +36,30 @@ class SaleItem(models.Model):
     def __str__(self):
         return f"{self.product.name} - {self.invoice.invoice_no}"
 
+class Receipt(models.Model):
+    PAYMENT_METHODS = [
+        ('Cash', 'Cash'),
+        ('Bank', 'Bank Transfer'),
+        ('UPI', 'UPI'),
+        ('Cheque', 'Cheque'),
+        ('Card', 'Card'),
+    ]
+    receipt_no = models.CharField(max_length=50, unique=True)
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='receipts')
+    invoice = models.ForeignKey(SaleInvoice, on_delete=models.SET_NULL, null=True, blank=True, related_name='receipts')
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    date = models.DateField(auto_now_add=True)
+    payment_method = models.CharField(max_length=20, choices=PAYMENT_METHODS, default='Cash')
+    reference_no = models.CharField(max_length=100, blank=True, null=True)
+    notes = models.TextField(blank=True, null=True)
+    created_date = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.receipt_no
+
+    class Meta:
+        ordering = ['-created_date']
+
 class SalesReturn(models.Model):
     return_no = models.CharField(max_length=50, unique=True)
     sale_invoice = models.ForeignKey(SaleInvoice, on_delete=models.CASCADE, related_name='returns')
