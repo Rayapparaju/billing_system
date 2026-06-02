@@ -137,7 +137,17 @@ def sale_delete(request, pk):
 @login_required
 def receipt_list(request):
     receipts = Receipt.objects.select_related('customer', 'invoice').all().order_by('-created_date')
-    return render(request, 'sales/receipt_list.html', {'receipts': receipts})
+    invoice_ids = [r.invoice_id for r in receipts if r.invoice_id]
+    totals_paid = SaleInvoice.objects.filter(id__in=invoice_ids).annotate(
+        total_paid=Sum('receipts__amount')
+    ).values_list('id', 'grand_total', 'total_paid')
+    balance_map = {}
+    for iid, gt, tp in totals_paid:
+        balance_map[iid] = float(gt) - float(tp or 0)
+    return render(request, 'sales/receipt_list.html', {
+        'receipts': receipts,
+        'balance_map': balance_map,
+    })
 
 @login_required
 def receipt_create(request):
