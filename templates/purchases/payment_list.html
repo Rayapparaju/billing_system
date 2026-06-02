@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% load purchase_extras %}
+{% block title %}Payments - Billing System{% endblock %}
+{% block page_title %}Payments to Suppliers{% endblock %}
+
+{% block content %}
+<div class="card fade-in">
+  <div class="card-header">
+    <h5><i class="fas fa-hand-holding-usd" style="color:var(--primary);"></i> All Payments</h5>
+    <a href="{% url 'purchases:payment_create' %}" class="btn btn-primary btn-sm"><i class="fas fa-plus"></i> New Payment</a>
+  </div>
+  <div class="card-body">
+    <div class="table-container">
+      <table class="table">
+        <thead>
+          <tr><th>Payment #</th><th>Supplier</th><th>Invoice</th><th>Date</th><th>Amount</th><th>Balance</th><th>Method</th><th>Ref No</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+          {% for p in payments %}
+          <tr>
+            <td><strong>{{ p.payment_no }}</strong></td>
+            <td>{{ p.supplier.name }}</td>
+            <td>{% if p.invoice %}{{ p.invoice.invoice_no }}{% else %}-{% endif %}</td>
+            <td>{{ p.date|date:'d-m-Y' }}</td>
+            <td>&#8377; {{ p.amount|floatformat:2 }}</td>
+            <td>
+              {% if p.invoice %}
+                &#8377; {{ balance_map|dictkey:p.invoice_id|floatformat:2 }}
+              {% else %}
+                -
+              {% endif %}
+            </td>
+            <td><span class="badge badge-info">{{ p.payment_method }}</span></td>
+            <td>{{ p.reference_no|default:'-' }}</td>
+            <td>
+              <button class="btn btn-danger btn-sm" data-delete-url="{% url 'purchases:payment_delete' p.pk %}" data-item="{{ p.payment_no }}"><i class="fas fa-trash"></i></button>
+            </td>
+          </tr>
+          {% empty %}<tr><td colspan="9" style="text-align:center;padding:40px;color:var(--gray-400);">No payments recorded yet.</td></tr>{% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

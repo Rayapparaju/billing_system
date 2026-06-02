@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+{% block title %}New Payment - Billing System{% endblock %}
+{% block page_title %}Record Payment to Supplier{% endblock %}
+
+{% block content %}
+<div class="card fade-in" style="max-width:600px;">
+  <div class="card-header">
+    <h5><i class="fas fa-hand-holding-usd" style="color:var(--primary);"></i> New Payment</h5>
+    <a href="{% url 'purchases:payment_list' %}" class="btn btn-outline btn-sm">Back</a>
+  </div>
+  <div class="card-body">
+    <form method="post">
+      {% csrf_token %}
+      <div class="form-group">
+        <label>Supplier *</label>
+        <select name="supplier" class="form-control" required onchange="filterInvoices(this.value)">
+          <option value="">-- Select Supplier --</option>
+          {% for s in suppliers %}
+          <option value="{{ s.pk }}">{{ s.name }} ({{ s.phone|default:'' }})</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Invoice (optional)</label>
+        <select name="invoice" class="form-control" id="invoiceSelect">
+          <option value="">-- No Invoice / General Payment --</option>
+          {% for inv in invoices %}
+          <option value="{{ inv.pk }}" data-supplier="{{ inv.supplier_id }}" data-total="{{ inv.grand_total }}" {% if preselected_invoice|slugify == inv.pk|slugify %}selected{% endif %}>{{ inv.invoice_no }} - {{ inv.supplier.name }} - &#8377;{{ inv.grand_total|floatformat:2 }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Amount *</label>
+        <input type="number" step="0.01" min="0.01" name="amount" class="form-control" required>
+      </div>
+      <div class="form-group">
+        <label>Payment Method</label>
+        <select name="payment_method" class="form-control">
+          <option value="Cash">Cash</option>
+          <option value="Bank">Bank Transfer</option>
+          <option value="UPI">UPI</option>
+          <option value="Cheque">Cheque</option>
+          <option value="Card">Card</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Reference No (optional)</label>
+        <input type="text" name="reference_no" class="form-control" placeholder="Cheque/Transaction/UPI ref">
+      </div>
+      <div class="form-group">
+        <label>Notes (optional)</label>
+        <textarea name="notes" class="form-control" rows="2"></textarea>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save Payment</button>
+        <a href="{% url 'purchases:payment_list' %}" class="btn btn-secondary">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function filterInvoices(supplierId) {
+  const sel = document.getElementById('invoiceSelect');
+  for (let opt of sel.options) {
+    if (opt.value === '' || opt.dataset.supplier === supplierId) {
+      opt.style.display = '';
+    } else {
+      opt.style.display = 'none';
+    }
+  }
+  if (sel.selectedOptions[0] && sel.selectedOptions[0].style.display === 'none') {
+    sel.value = '';
+  }
+}
+document.addEventListener('DOMContentLoaded', function() {
+  const invSel = document.getElementById('invoiceSelect');
+  const suppSel = document.querySelector('select[name="supplier"]');
+  if (invSel && suppSel) {
+    invSel.addEventListener('change', function() {
+      const selected = this.options[this.selectedIndex];
+      if (selected && selected.dataset.supplier) {
+        suppSel.value = selected.dataset.supplier;
+      }
+    });
+    if (invSel.value) {
+      invSel.dispatchEvent(new Event('change'));
+    }
+  }
+});
+</script>
+{% endblock %}

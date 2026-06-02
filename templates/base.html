@@ -50,6 +50,8 @@
         <a href="{% url 'purchases:return_list' %}" class="{% if 'return' in request.resolver_match.view_name and 'purchases' in request.resolver_match.view_name %}active{% endif %}">
           <i class="fas fa-undo"></i> Purchase Returns
         </a>
+        <a href="{% url 'purchases:payment_list' %}" class="{% if 'payment' in request.resolver_match.view_name %}active{% endif %}">
+          <i class="fas fa-money-bill-wave"></i> Payments
         <div class="menu-label">Reports</div>
         <a href="{% url 'reports:daily_sales' %}" class="{% if 'daily_sales' in request.resolver_match.view_name %}active{% endif %}">
           <i class="fas fa-calendar-day"></i> Daily Sales

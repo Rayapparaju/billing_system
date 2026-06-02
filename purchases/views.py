@@ -2,9 +2,21 @@ import json
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from .models import PurchaseInvoice, PurchaseItem, PurchaseReturn, PurchaseReturnItem
+from django.db.models import Sum
+from .models import PurchaseInvoice, PurchaseItem, Payment, PurchaseReturn, PurchaseReturnItem
 from suppliers.models import Supplier
 from products.models import Product
+
+
+def update_purchase_payment_status(invoice):
+    total_paid = Payment.objects.filter(invoice=invoice).aggregate(Sum('amount'))['amount__sum'] or 0
+    if total_paid >= invoice.grand_total:
+        invoice.payment_status = 'Paid'
+    elif total_paid > 0:
+        invoice.payment_status = 'Partial'
+    else:
+        invoice.payment_status = 'Unpaid'
+    invoice.save(update_fields=['payment_status'])
 
 @login_required
 def purchase_list(request):
@@ -90,7 +102,86 @@ def purchase_create(request):
 def purchase_detail(request, pk):
     invoice = get_object_or_404(PurchaseInvoice.objects.select_related('supplier'), pk=pk)
     items = PurchaseItem.objects.filter(invoice=invoice).select_related('product')
-    return render(request, 'purchases/purchase_detail.html', {'invoice': invoice, 'items': items})
+    payments = Payment.objects.filter(invoice=invoice).order_by('-created_date')
+    total_paid = sum(p.amount for p in payments)
+    balance = invoice.grand_total - total_paid
+    return render(request, 'purchases/purchase_detail.html', {
+        'invoice': invoice, 'items': items,
+        'payments': payments, 'total_paid': total_paid, 'balance': balance,
+    })
+
+@login_required
+def payment_list(request):
+    payments = Payment.objects.select_related('supplier', 'invoice').all().order_by('-created_date')
+    invoice_ids = [p.invoice_id for p in payments if p.invoice_id]
+    totals_paid = PurchaseInvoice.objects.filter(id__in=invoice_ids).annotate(
+        total_paid=Sum('payments__amount')
+    ).values_list('id', 'grand_total', 'total_paid')
+    balance_map = {}
+    for iid, gt, tp in totals_paid:
+        balance_map[iid] = float(gt) - float(tp or 0)
+    return render(request, 'purchases/payment_list.html', {
+        'payments': payments,
+        'balance_map': balance_map,
+    })
+
+@login_required
+def payment_create(request):
+    suppliers = Supplier.objects.all()
+    if request.method == 'POST':
+        supplier_id = request.POST.get('supplier')
+        invoice_id = request.POST.get('invoice')
+        amount = request.POST.get('amount')
+        payment_method = request.POST.get('payment_method', 'Cash')
+        reference_no = request.POST.get('reference_no', '')
+        notes = request.POST.get('notes', '')
+        if not supplier_id or not amount:
+            messages.error(request, 'Supplier and amount are required.')
+            return redirect('purchases:payment_create')
+        try:
+            amount = float(amount)
+        except:
+            messages.error(request, 'Invalid amount.')
+            return redirect('purchases:payment_create')
+        supplier = get_object_or_404(Supplier, pk=supplier_id)
+        invoice = None
+        if invoice_id:
+            invoice = get_object_or_404(PurchaseInvoice, pk=invoice_id)
+        last_pmt = Payment.objects.order_by('-id').first()
+        last_num = 0
+        if last_pmt and last_pmt.payment_no.startswith('PAY-'):
+            try:
+                last_num = int(last_pmt.payment_no.replace('PAY-', ''))
+            except:
+                pass
+        payment_no = f'PAY-{str(last_num + 1).zfill(5)}'
+        Payment.objects.create(
+            payment_no=payment_no, supplier=supplier, invoice=invoice,
+            amount=amount, payment_method=payment_method,
+            reference_no=reference_no, notes=notes,
+        )
+        if invoice:
+            update_purchase_payment_status(invoice)
+        messages.success(request, f'Payment {payment_no} recorded successfully.')
+        return redirect('purchases:payment_list')
+    invoices = PurchaseInvoice.objects.select_related('supplier').all().order_by('-created_date')
+    preselected_invoice = request.GET.get('invoice')
+    return render(request, 'purchases/payment_form.html', {
+        'suppliers': suppliers, 'invoices': invoices,
+        'preselected_invoice': preselected_invoice,
+    })
+
+@login_required
+def payment_delete(request, pk):
+    payment = get_object_or_404(Payment, pk=pk)
+    if request.method == 'POST':
+        invoice = payment.invoice
+        payment.delete()
+        if invoice:
+            update_purchase_payment_status(invoice)
+        messages.success(request, 'Payment deleted.')
+        return redirect('purchases:payment_list')
+    return render(request, 'purchases/payment_confirm_delete.html', {'payment': payment})
 
 @login_required
 def purchase_delete(request, pk):
