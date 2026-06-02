@@ -2,6 +2,7 @@ from django.core.management.base import BaseCommand
 from django.utils import timezone
 from datetime import date, timedelta
 from django.contrib.auth.models import User
+from accounts.models import Company
 from customers.models import Customer
 from suppliers.models import Supplier
 from products.models import Product, Category
@@ -17,7 +18,8 @@ class Command(BaseCommand):
         self.stdout.write('Seeding demo data...')
 
         if not User.objects.filter(username='admin').exists():
-            User.objects.create_superuser('admin', 'admin@example.com', 'admin123')
+            user = User.objects.create_superuser('admin', 'admin@example.com', 'admin123')
+            Company.objects.get_or_create(user=user, defaults={'name': 'Goutham Enterprise', 'phone': '9876543210', 'email': 'admin@example.com'})
             self.stdout.write('Created superuser (admin / admin123)')
 
         # Categories
