@@ -79,6 +79,9 @@
           <i class="fas fa-user-check"></i> Creditors
         </a>
         <div class="menu-label">Account</div>
+        <a href="{% url 'accounts:company' %}" class="{% if 'company' in request.resolver_match.view_name %}active{% endif %}">
+          <i class="fas fa-building"></i> Company Settings
+        </a>
         <a href="{% url 'accounts:logout' %}">
           <i class="fas fa-sign-out-alt"></i> Logout
         </a>

@@ -53,9 +53,9 @@
   <div class="invoice-box">
     <div class="invoice-header">
       <div class="company">
-        <h2>Goutham Enterprise</h2>
-        <p>Your Business Address, City, State - 000000</p>
-        <p>GST: 00AAAAA0000A0Z0 | Phone: +91 9876543210</p>
+        <h2>{{ company.name|default:'Goutham Enterprise' }}</h2>
+        <p>{{ company.address|default:'Your Business Address' }}</p>
+        <p>{% if company.gst_number %}GST: {{ company.gst_number }} | {% endif %}Phone: {{ company.phone|default:'+91 0000000000' }}{% if company.email %} | {{ company.email }}{% endif %}</p>
       </div>
       <div class="invoice-info">
         <h3>TAX INVOICE</h3>

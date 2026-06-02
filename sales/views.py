@@ -98,7 +98,10 @@ def sale_detail(request, pk):
 def sale_print(request, pk):
     invoice = get_object_or_404(SaleInvoice.objects.select_related('customer'), pk=pk)
     items = SaleItem.objects.filter(invoice=invoice).select_related('product')
-    return render(request, 'sales/sale_print.html', {'invoice': invoice, 'items': items})
+    company = None
+    if hasattr(request.user, 'company'):
+        company = request.user.company
+    return render(request, 'sales/sale_print.html', {'invoice': invoice, 'items': items, 'company': company})
 
 @login_required
 def sale_delete(request, pk):
