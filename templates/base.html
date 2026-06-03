@@ -34,6 +34,8 @@
         <a href="{% url 'products:category_list' %}" class="{% if 'category' in request.resolver_match.view_name %}active{% endif %}">
           <i class="fas fa-tags"></i> Categories
         </a>
+        <a href="{% url 'dataimport:import' %}" class="{% if 'dataimport' in request.resolver_match.view_name %}active{% endif %}">
+          <i class="fas fa-file-excel"></i> Import Excel
         <div class="menu-label">Transactions</div>
         <a href="{% url 'sales:list' %}" class="{% if 'sales' in request.resolver_match.view_name %}active{% endif %}">
           <i class="fas fa-file-invoice"></i> Sales Invoices

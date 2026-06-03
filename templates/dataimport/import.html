@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block title %}Import Data - Billing System{% endblock %}
+{% block page_title %}Import from Excel{% endblock %}
+
+{% block content %}
+<div class="card fade-in" style="max-width:700px;">
+  <div class="card-header">
+    <h5><i class="fas fa-file-excel" style="color:var(--primary);"></i> Upload Excel File</h5>
+  </div>
+  <div class="card-body">
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      <div class="form-group">
+        <label>Excel File (.xlsx)</label>
+        <input type="file" name="file" accept=".xlsx,.xls" class="form-control" required>
+      </div>
+      <p style="font-size:0.85rem;color:var(--gray-500);margin-bottom:20px;">
+        Expected sheets and columns:
+      </p>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:24px;">
+        <div class="card" style="padding:16px;">
+          <h6 style="margin-bottom:8px;color:var(--primary);">Customers</h6>
+          <ul style="font-size:0.78rem;color:var(--gray-500);padding-left:16px;">
+            <li>Name*</li><li>Phone</li><li>Email</li><li>Address</li><li>Opening Balance</li>
+          </ul>
+        </div>
+        <div class="card" style="padding:16px;">
+          <h6 style="margin-bottom:8px;color:var(--primary);">Suppliers</h6>
+          <ul style="font-size:0.78rem;color:var(--gray-500);padding-left:16px;">
+            <li>Name*</li><li>Phone</li><li>Email</li><li>Address</li><li>Opening Balance</li>
+          </ul>
+        </div>
+        <div class="card" style="padding:16px;">
+          <h6 style="margin-bottom:8px;color:var(--primary);">Products</h6>
+          <ul style="font-size:0.78rem;color:var(--gray-500);padding-left:16px;">
+            <li>Name*</li><li>Category</li><li>Purchase Price</li><li>Selling Price</li><li>GST%</li><li>Stock</li><li>Low Stock Alert</li><li>HSN Code</li>
+          </ul>
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary"><i class="fas fa-upload"></i> Import Data</button>
+      <a href="{% url 'accounts:company' %}" class="btn btn-outline">Cancel</a>
+    </form>
+  </div>
+</div>
+{% endblock %}

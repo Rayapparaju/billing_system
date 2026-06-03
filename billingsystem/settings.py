@@ -25,6 +25,7 @@ INSTALLED_APPS = [
     'sales',
     'purchases',
     'reports',
+    'dataimport',
 ]
 
 MIDDLEWARE = [
