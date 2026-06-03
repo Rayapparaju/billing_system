@@ -6,7 +6,7 @@
 <div class="card fade-in" style="max-width:600px;">
   <div class="card-header">
     <h5><i class="fab fa-whatsapp" style="color:#25D366;"></i> Send via WhatsApp</h5>
-    <a href="{% url cancel_url.0 cancel_url.1|join:',' %}" class="btn btn-outline btn-sm">Back</a>
+    <a href="{{ cancel_url }}" class="btn btn-outline btn-sm">Back</a>
   </div>
   <div class="card-body">
     <p style="margin-bottom:16px;">Sending to: <strong>{{ phone }}</strong></p>
@@ -17,7 +17,7 @@
       {% csrf_token %}
       <div style="display:flex;gap:10px;">
         <button type="submit" class="btn btn-success"><i class="fab fa-whatsapp"></i> Send via WhatsApp</button>
-        <a href="{% url cancel_url.0 cancel_url.1|join:',' %}" class="btn btn-secondary">Cancel</a>
+        <a href="{{ cancel_url }}" class="btn btn-secondary">Cancel</a>
       </div>
     </form>
   </div>

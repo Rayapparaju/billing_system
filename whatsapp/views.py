@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.urls import reverse
 from sales.models import SaleInvoice, SaleItem, Receipt
 from purchases.models import PurchaseInvoice, PurchaseItem, Payment
 from accounts.models import Company
@@ -33,7 +34,7 @@ def send_sale_invoice(request, pk):
         'title': f'Send Invoice {invoice.invoice_no}',
         'phone': phone,
         'message': msg_preview,
-        'cancel_url': ('sales:detail', [pk]),
+        'cancel_url': reverse('sales:detail', args=[pk]),
     })
 
 @login_required
@@ -58,7 +59,7 @@ def send_purchase_invoice(request, pk):
         'title': f'Send Purchase {invoice.invoice_no}',
         'phone': phone,
         'message': msg_preview,
-        'cancel_url': ('purchases:detail', [pk]),
+        'cancel_url': reverse('purchases:detail', args=[pk]),
     })
 
 @login_required
@@ -82,7 +83,7 @@ def send_receipt(request, pk):
         'title': f'Send Receipt {receipt.receipt_no}',
         'phone': phone,
         'message': msg_preview,
-        'cancel_url': ('sales:receipt_list', []),
+        'cancel_url': reverse('sales:receipt_list'),
     })
 
 @login_required
@@ -106,5 +107,5 @@ def send_payment(request, pk):
         'title': f'Send Payment {payment.payment_no}',
         'phone': phone,
         'message': msg_preview,
-        'cancel_url': ('purchases:payment_list', []),
+        'cancel_url': reverse('purchases:payment_list'),
     })
