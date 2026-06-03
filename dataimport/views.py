@@ -2,6 +2,7 @@ import pandas as pd
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.http import HttpResponse
 from customers.models import Customer
 from suppliers.models import Supplier
 from products.models import Product, Category
@@ -40,6 +41,30 @@ def get_val(row, cm, *variants):
         if vl in cm:
             return row[cm[vl]]
     return None
+
+@login_required
+def download_sample(request):
+    sheets = {
+        'Customers': pd.DataFrame([{
+            'Name': 'Sample Customer', 'Phone': '9876543210', 'Email': 'customer@example.com',
+            'Address': '123 Main St, City', 'Opening Balance': 0.00
+        }]),
+        'Suppliers': pd.DataFrame([{
+            'Name': 'Sample Supplier', 'Phone': '9876543211', 'Email': 'supplier@example.com',
+            'Address': '456 Market Rd, City', 'Opening Balance': 0.00
+        }]),
+        'Products': pd.DataFrame([{
+            'Name': 'Sample Product', 'Category': 'General', 'Purchase Price': 50.00,
+            'Selling Price': 80.00, 'GST%': 18, 'Stock': 100,
+            'Low Stock Alert': 5, 'HSN Code': '12345678'
+        }]),
+    }
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename="import_sample.xlsx"'
+    with pd.ExcelWriter(response, engine='openpyxl') as writer:
+        for name, df in sheets.items():
+            df.to_excel(writer, sheet_name=name, index=False)
+    return response
 
 @login_required
 def import_excel(request):
