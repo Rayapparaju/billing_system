@@ -33,7 +33,10 @@
             <td><span class="badge badge-info">{{ p.payment_method }}</span></td>
             <td>{{ p.reference_no|default:'-' }}</td>
             <td>
-              <button class="btn btn-danger btn-sm" data-delete-url="{% url 'purchases:payment_delete' p.pk %}" data-item="{{ p.payment_no }}"><i class="fas fa-trash"></i></button>
+              <div class="actions" style="display:flex;gap:4px;">
+                <a href="{% url 'whatsapp:send_payment' p.pk %}" class="btn btn-success btn-sm" style="background:#25D366;border-color:#25D366;padding:4px 8px;font-size:0.75rem;"><i class="fab fa-whatsapp"></i></a>
+                <button class="btn btn-danger btn-sm" data-delete-url="{% url 'purchases:payment_delete' p.pk %}" data-item="{{ p.payment_no }}"><i class="fas fa-trash"></i></button>
+              </div>
             </td>
           </tr>
           {% empty %}<tr><td colspan="9" style="text-align:center;padding:40px;color:var(--gray-400);">No payments recorded yet.</td></tr>{% endfor %}
