@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block title %}Download Backup - Billing System{% endblock %}
+{% block page_title %}Download Backup{% endblock %}
+
+{% block content %}
+<div class="card fade-in" style="max-width:500px;">
+  <div class="card-header">
+    <h5><i class="fas fa-download" style="color:var(--primary);"></i> Create & Download Backup</h5>
+    <a href="{% url 'backup:list' %}" class="btn btn-outline btn-sm">Back</a>
+  </div>
+  <div class="card-body" style="text-align:center;">
+    <i class="fas fa-database" style="font-size:3rem;color:var(--primary);margin-bottom:16px;"></i>
+    <p style="margin-bottom:20px;">Download a ZIP file containing JSON backups of all your data:</p>
+    <ul style="text-align:left;margin-bottom:24px;font-size:0.9rem;color:var(--gray-500);">
+      <li>Customers</li><li>Suppliers</li><li>Products & Categories</li>
+      <li>Company Info</li><li>Sales Invoices & Items</li><li>Purchase Invoices & Items</li>
+    </ul>
+    <form method="post">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-primary"><i class="fas fa-file-archive"></i> Download ZIP Backup</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

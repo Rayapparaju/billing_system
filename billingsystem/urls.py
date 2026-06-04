@@ -13,4 +13,5 @@ urlpatterns = [
     path('reports/', include('reports.urls')),
     path('import/', include('dataimport.urls')),
     path('whatsapp/', include('whatsapp.urls')),
+    path('backup/', include('backup.urls')),
 ]

@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% block title %}Backups - Billing System{% endblock %}
+{% block page_title %}Backup & Restore{% endblock %}
+
+{% block content %}
+<div class="card fade-in">
+  <div class="card-header">
+    <h5><i class="fas fa-database" style="color:var(--primary);"></i> Database Backups</h5>
+    <div class="actions">
+      <a href="{% url 'backup:create' %}" class="btn btn-primary btn-sm"><i class="fas fa-download"></i> Download Backup</a>
+    </div>
+  </div>
+  <div class="card-body">
+    <div style="margin-bottom:20px;padding:16px;background:var(--gray-100);border-radius:8px;">
+      <p style="font-size:0.9rem;"><i class="fas fa-info-circle" style="color:var(--primary);"></i> Backups are JSON exports of all master data and transactions. Download a ZIP file containing individual JSON files for each app.</p>
+    </div>
+    <div style="margin-bottom:20px;padding:16px;background:var(--gray-100);border-radius:8px;">
+      <h6 style="margin-bottom:8px;"><i class="fas fa-clock"></i> Scheduled Auto-Backup</h6>
+      <p style="font-size:0.85rem;color:var(--gray-500);">To enable daily auto-backups, add this cron job (Linux) or Task Scheduler (Windows):</p>
+      <pre style="background:#1e1e2e;color:#fff;padding:12px;border-radius:6px;font-size:0.78rem;margin-top:8px;overflow-x:auto;"># Run daily at 2 AM (Linux cron)
+0 2 * * * cd /path/to/billingsystem && python manage.py backup_data
+
+# Windows Task Scheduler equivalent:
+python manage.py backup_data</pre>
+    </div>
+    <div class="table-container">
+      <table class="table">
+        <thead><tr><th>Backup Files</th><th>Size</th></tr></thead>
+        <tbody>
+          {% for b in backups %}
+          <tr>
+            <td>{{ b.app|capfirst }} - {{ b.date|date:'d M Y H:i' }}</td>
+            <td>{{ b.size }}</td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="2" style="text-align:center;padding:40px;color:var(--gray-400);">No backups found. Click "Download Backup" to create one.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

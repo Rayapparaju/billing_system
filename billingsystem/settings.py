@@ -27,6 +27,7 @@ INSTALLED_APPS = [
     'reports',
     'dataimport',
     'whatsapp',
+    'backup',
 ]
 
 MIDDLEWARE = [
@@ -102,3 +103,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 TWILIO_ACCOUNT_SID = os.environ.get('TWILIO_ACCOUNT_SID', '')
 TWILIO_AUTH_TOKEN = os.environ.get('TWILIO_AUTH_TOKEN', '')
 TWILIO_WHATSAPP_FROM = os.environ.get('TWILIO_WHATSAPP_FROM', 'whatsapp:+14155238886')
+
+import os
+BACKUP_DIR = BASE_DIR / 'backups'
+os.makedirs(BACKUP_DIR, exist_ok=True)
